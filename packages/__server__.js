@@ -15,6 +15,8 @@ var SERVER = Express()
 var getIP = require('ipware')().get_ip;
 
 var nbrcarstable=[];
+var dynmicOrStatic="dynamic";
+var nbrMustConnectdDevices =1;
 
 
 //initialisation  socket 
@@ -328,10 +330,10 @@ function ROUTING() {
 
 
     ROUTER_INDEX.get("/sendNbrCars/:nbrcars/:ip", (req, res) => {
-        var nbrMustConnectdDevices =1;
+    
         var nbrCars=req.params.nbrcars;
         var ip=req.params.ip;
-        if(listclient.length==nbrMustConnectdDevices){
+        if((listclient.length==nbrMustConnectdDevices)&&(dynmicOrStatic=="dynamic")){
             var testTable=nbrcarstable.filter(item=>item.ip==ip);
             if(testTable.length==0){
                 nbrcarstable.push({
@@ -375,10 +377,16 @@ function ROUTING() {
     io.on("connection", function (client) {
        
         listclient.push(client)
+        if(listclient.length==nbrMustConnectdDevices){dynmicOrStatic="dynamic"}
         console.log("connected ="+listclient.length);
 
         client.on("disconnect",function(){
         console.log("client diconnect")
+        dynmicOrStatic="static"
+        setTimeout(()=>{
+            console.log("=============static method=============")
+        },5000)
+
         listclient=listclient.filter(item=>item.id!=client.id);
         console.log("connected ="+listclient.length);
 
