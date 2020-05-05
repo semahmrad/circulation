@@ -14,6 +14,8 @@ var ROUTER_INDEX = Express.Router()
 var SERVER = Express()
 var getIP = require('ipware')().get_ip;
 
+var nbrcarstable=[];
+
 
 //initialisation  socket 
 
@@ -325,14 +327,42 @@ function ROUTING() {
 
 
 
-    ROUTER_INDEX.get("/sendNbrCars/:nbrcars", (req, res) => {
-        ROUTER_INDEX.sendOrNot = "not";
+    ROUTER_INDEX.get("/sendNbrCars/:nbrcars/:ip", (req, res) => {
+        var nbrMustConnectdDevices =1;
+        var nbrCars=req.params.nbrcars;
+        var ip=req.params.ip;
+        if(listclient.length==nbrMustConnectdDevices){
+            var testTable=nbrcarstable.filter(item=>item.ip==ip);
+            if(testTable.length==0){
+                nbrcarstable.push({
+                    nbrCars,
+                    ip
+                })
+                if(nbrMustConnectdDevices==nbrcarstable.length){
+                
+                    console.log("=========dynamic methode ================")
+                    ROUTER_INDEX.sendOrNot = "not";
         
-        console.log("nbr : " + req.params.nbrcars);
-        setTimeout(() => {
-            console.log("Sleeeeeeeep !");
-            ROUTER_INDEX.sendOrNot = "send";
-        }, 10000);
+                    console.log("nbr : " + req.params.nbrcars);
+                    setTimeout(() => {
+                           
+                        console.log("Sleeeeeeeep !");
+                        ROUTER_INDEX.sendOrNot = "send";
+                        nbrcarstable.splice(0,nbrcarstable.length);
+                    }, 5000);
+                }
+
+
+            }
+
+        }
+        else {
+            
+            console.log("static ....")
+        }
+
+        console.log("client ip ==>"+req.params.ip)
+       
 
         res.send(ROUTER_INDEX.sendOrNot)
 
@@ -349,7 +379,7 @@ function ROUTING() {
 
         client.on("disconnect",function(){
         console.log("client diconnect")
-        listclient=listclient.filter(item=>item.handshake.address!=client.handshake.address);
+        listclient=listclient.filter(item=>item.id!=client.id);
         console.log("connected ="+listclient.length);
 
     })
