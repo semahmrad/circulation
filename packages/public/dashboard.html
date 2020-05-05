@@ -1,0 +1,32 @@
+<html>
+    <body>
+        <script src="jq.js"></script>
+
+        <script>
+         $(document).ready(function(){
+            $('#testing').click(function(){
+            $.ajax({
+                dataType:"json",
+                type:"get",
+                url :"/siteData",
+                data:{
+                    
+                },
+                success:function(result){
+                    alert(result[0].rue);
+                }
+
+            })
+
+         });
+        });
+        </script>
+
+        <h1>DashboardPage</h1>
+        <div id="zoneTest">
+
+        </div>
+        <button id ="testing">test</button>
+        <a href="/logout">logout</a>
+    </body>
+</html>

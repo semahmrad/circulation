@@ -1,0 +1,298 @@
+<html>
+
+<head>
+  <title>Setting </title>
+</head>
+<meta charset="utf-8" />
+<!-- <link rel="stylesheet" href="cssFile/style_setting.css" />-->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+  integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+<link rel="stylesheet" href="cssFile/style_setting.css">
+
+<head>
+  <script src="jq.js"></script>
+
+  <script>
+    var devices = [];
+    var direction = {
+      north: "",
+      south: "",
+      west: "",
+      east: ""
+    }
+    $(document).on("click", "#nextbtn", function () {
+      $("#PrincipalList").empty();
+   
+      for (i = 0; i < devices.length; i++) {
+        $("#PrincipalList").append("<li data-draggable='item' draggable='true'>" + devices[i].ip + "</li>")
+      }
+      $("#StreetSetting").css("display", "block")
+
+      $('html, body').animate({
+        scrollTop: $("#StreetSetting").offset().top
+      }, 800, function () {
+      });
+
+    })
+    // $(document).on("change", "#selectStreet", function () {
+    $(document).ready(function () {
+      $("#subtbtn").click(function () {
+        var data = {
+          north: "::ffff:127.0.0.2",
+          south: "::ffff:192.168.1.21",
+          west: "::ffff:127.0.0.3",
+          east: "::ffff:127.0.0.1"
+        };
+        $.ajax({
+          type: "GET",
+          url: "/makeIntersection",
+          data: {
+            direction: data
+          },
+          success: function (res) {
+            alert(res);
+          }
+
+        })
+      })
+
+      $("#nextbtn").prop("disabled", true)
+      setInterval(function () {
+        $("#nextbtn").prop("disabled", checkToNext())
+
+
+        $.ajax({
+          url: '/getCameraData',
+          data: "",
+          dataType: "json",
+          success: function (data) {
+
+            $("#connedteddevs").empty();
+            // alert(data[0].ip)
+            for (i = 0; i < data.length; i++) {
+              var ip = data[i].ip;
+              var exist = false
+
+              for (x = 0; x < devices.length; x++) {
+                if (ip == devices[x].ip)
+                  exist = true;
+              }
+              if (!exist) {
+                var cam = {
+                  ip: data[i].ip,
+                  mark: data[i].mark,
+                  model: data[i].model,
+                };
+                devices.push(cam);
+
+              }
+
+              var elem =
+                '<div class="card" style=" margin-left:10px;width: 13rem;height: 19rem;">' +
+                '<div class="card-body">' +
+                '<center><small class="pull-right"><img src="./img/cameraLogo.png" class="img-thumbnail" height = "80" width="80"></small></center><h5 class="card-title">' +
+                data[i].model + '</h5> ' +
+                '<div class="form">' +
+                '<div class="form-group">' +
+                ' <label class="label">Mark : </label>' +
+                ' <input type="text" disabled value="' + data[i].mark +
+                '" class="form-control"/>' +
+                ' </div>' +
+                '<div class="form-group">' +
+                '  <label class="label">Internet Protocol (IP) : </label>' +
+                '  <input type="text" disabled value="' + data[i].ip +
+                '" class="form-control"/>' +
+                ' </div></div></div></div>';
+
+
+              // var elem = "<div id='n_device' class='col col-4'><p> ip camera : "+data[i].ip+"</div>";
+              $("#connedteddevs").append(elem);
+            }
+
+
+          }
+        });
+
+      }, 1000);
+
+
+      $("#idButton").click(function () {
+        $.ajax({
+          type: "get",
+          url: "/site",
+          data: {
+            gouvernorat: $("#idGouvernorat").val(),
+            rue: $("#idRue").val()
+          },
+          success: function (result) {
+
+
+            if (result == "suscess query") {
+              $("#validation").empty();
+              $("#validation").append(result)
+            } else {
+
+              $("#validation").empty();
+              $("#validation").append("probleeem")
+            }
+          }
+        })
+      })
+
+      function checkToNext() {
+        return (devices.length <= 0 || $("#idRue").val() == "" || $("#idGouvernorat").val() == "")
+      }
+    })
+    
+
+    $(document).on("click", "#nextbtn", function () {
+     
+   
+     for (i = 0; i < devices.length; i++) {
+       $("#PrincipalList").append("<li data-draggable='item' draggable='true'>" + devices[i].ip + "</li>")
+     }
+     $("#StreetSetting").css("display", "block")
+
+     $('html, body').animate({
+       scrollTop: $("#StreetSetting").offset().top
+     }, 800, function () {
+
+
+     });
+
+
+
+
+   })
+   $(document).on("click", "#nextbtn", function () {
+     var north= $("north").children("option:selected").val()
+     alert(north);
+   })
+  </script>
+
+  
+ 
+</head>
+
+<body bgcolor="#e5e7e8">
+
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-12">
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+          <a class="navbar-brand" href="#">Setting</a>
+          <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="col-10"></div>
+          <a href="/logout" class="btn btn-outline-danger my-2 my-sm-0 pull-right">Logout</a>
+
+
+        </nav>
+      </div>
+    </div>
+
+
+
+    <div class="row" style="margin: 4px;
+                      padding: 8px;
+                      background-color: #e8e8e8;
+                      border-radius: 5px;">
+      <div class="col-4">
+        <form>
+          <div class="form-group">
+            <label for="state1">State </label>
+            <input type="text" class="form-control" name='gouvernorat' id="idGouvernorat" placeholder="Enter the state">
+          </div>
+          <div class="form-group">
+            <label for="state1">Street </label>
+            <input type="text" class="form-control" name='rue' id="idRue" placeholder="Enter the Street name">
+          </div>
+          <!--<button type="button" id="idButton" class="btn btn-primary">Confirm !</button>-->
+        </form>
+        <div id="validation"></div>
+      </div>
+
+      <div class="col">
+        <div>
+          <h3 class="h3">
+            Guide
+          </h3>
+          <ul>
+            <li>Write the State</li>
+            <li>Then write the street name</li>
+            <li>Connect your camera devices</li>
+            <li>Click Next to cotinue your settings</li>
+          </ul>
+        </div>
+      </div>
+
+
+    </div>
+
+    <div class="row" id="connedteddevs">
+
+      <div class="col">No carema detected, please connect yours !</div>
+    </div>
+    <div class="row">
+      <div class="col">
+
+      </div>
+    </div>
+
+    <style>
+      .backGroudStreet {
+        background-color: #9d9c9a;
+        height: 115px;
+      }
+
+      .backGroudStreetTop {
+        background-color: #9d9c9a;
+        height: 100%;
+        width: 115px;
+      }
+    </style>
+
+
+
+
+
+
+
+
+    <div class="container-fluid" id="StreetSetting" style="width: 100% ;display:none;
+                  margin: 0 auto;
+                  padding: 0 auto;
+                  background-color: white;">
+
+
+
+      <ol data-draggable="target" style="height: 150px; position:absolute;" draggable="true" id="PrincipalList">
+      
+      </ol>
+      <ol data-draggable="target" style="left: 44%;top: 9%;position: absolute;"id="north">
+      </ol>
+      <ol data-draggable="target" style="position: absolute;left: 21%;top: 44%;"id="west">
+      </ol>
+      <ol data-draggable="target" style="top: 44%; position: absolute; left: 66.5%;"id="east">
+      </ol>
+      <ol data-draggable="target" style="position: absolute; top: 83%; left: 44%;"id="south">
+      </ol>
+      <img class="centered" src="img/street.png" alt="">
+      <script src="./dragAnd.js"></script>
+    </div>
+
+    <button id="nextbtn" class="float-right btn btn-lg btn-success">Next</button>
+
+    <button id="subtbtn" class="float-right btn btn-lg btn-success">Submit</button>
+
+
+
+  </div>
+
+
+
+</body>
+
+</html>

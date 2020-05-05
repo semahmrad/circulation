@@ -1,0 +1,45 @@
+
+
+#form{
+    background: 776b6b;
+    width: 600;
+    height: 300;
+    margin-left: 30%;
+    margin-top: 14%;
+}
+#contForm{ 
+    border: 1px solid;
+    background: #e0e2e2;
+    width: 355px;
+    height: 280px;
+    margin-top: 250;
+    margin-left: 38%;
+    border-radius: 21px;
+}
+#lab{text-align: center;
+    color: black;
+    font-size: 22px;
+    font-family: cursive;
+    margin-top: 5px;
+    margin-bottom: 17px;
+}
+.input1{
+    height: 25px;
+    width: 250px;
+    margin-left: 50px;
+    border: 1px solid;
+}
+.btn{
+    width: 150px;
+    margin-left: 104px;
+    margin-top: 10px;
+    color: black;
+    font-size: initial;
+    border: 1px solid;
+}
+
+#err{
+    color: red;
+    text-align: center;
+    margin-top: 20px;
+}

@@ -1,0 +1,54 @@
+
+
+#n_device{
+    margin: 2;
+    background-color: #e8e8e8;
+    border-radius: 5px;
+}
+#connedteddevs{
+    margin: 2px;;
+}
+
+.centered {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    /* bring your own prefixes */
+    transform: translate(-50%, -50%);
+  }
+
+/* draggable targets */
+[data-draggable="target"]
+{
+	float:left;
+	list-style-type:none;
+	
+	width: 200px;
+    height: 50px;
+	overflow-y:auto;
+	
+	margin:0 0.5em 0.5em 0;
+	padding:0.5em;
+	
+	border:2px solid #888;
+	border-radius:0.2em;
+	
+	background:#ddd;
+	color:#555;
+}
+
+/* draggable items */
+[data-draggable="item"]
+{
+	display:block;
+	list-style-type:none;
+	border: solid gray 1px;
+    background-color: rgb(223, 223, 223);
+	
+	margin:0 0 2px 0;
+	padding:0.2em 0.4em;
+	
+	border-radius:0.2em;
+	
+	line-height:1.3;
+}

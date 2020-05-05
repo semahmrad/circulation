@@ -1,0 +1,60 @@
+<html>
+    <head>
+        <head>
+            <meta charset="utf-8" />
+            <link rel="stylesheet" href="cssFile/style_login.css" />
+            <title>Premiers tests du CSS</title>
+        </head>
+        
+        <script src= "jq.js"></script>
+
+        <script>
+            $(document).ready(function(){
+                $('#btnLogin').click(function(){
+                    $.ajax({
+                        type:'post',
+                        url :'/login',
+                        data:{
+                            username:$('#IDusername').val(),
+                            password:$('#IDpassword').val(),
+
+                        },
+                        success:function(result){
+                           if(result=="verifier votre username et password"){
+                                $('#err').empty()
+                                $('#err').append(result)
+                            }
+                          else{
+                            window.location="/verif"
+                          }
+                            
+                          
+                           //result="hello  world"
+                           //document.cookie=result
+                        }
+
+                    })
+                })
+            })
+
+
+        </script>
+        
+        
+    </head>
+
+    <body bgcolor="#e5e7e8">
+       
+            <div id="contForm">
+                <form action ='loginn' method="POST">
+                    <div id="lab">Username <br></div>
+                    <input type='text' name ='username' id='IDusername'class="input1"/><br>
+                    <div id="lab">Password <br></div>
+                    <input type='password' name ='password' id='IDpassword'class="input1"/><br>
+                </form>
+                <button id='btnLogin' class='btn'>valider</button></br>
+                <div id ="err"><span id="err" name="error" class="erreur"></span></div>
+             </div>
+      
+    </body>
+</html>
