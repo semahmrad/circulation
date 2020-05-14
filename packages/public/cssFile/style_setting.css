@@ -9,12 +9,20 @@
     margin: 2px;;
 }
 
-.centered {
-    position: fixed;
-    top: 50%;
-    left: 50%;
+.centered_NS {
+    /*position: fixed;*/
+   /* top: 50%;*/
+    /*left: 50%;*/
     /* bring your own prefixes */
-    transform: translate(-50%, -50%);
+	/*transform: translate(-50%, -50%);*/
+	position: relative;
+    left: 40.5%;
+  }
+  .centered_WE{
+	position: relative;
+	top: 45%;
+	left: 10%;
+	/*transform: translate(-50%, );*/
   }
 
 /* draggable targets */
@@ -24,7 +32,7 @@
 	list-style-type:none;
 	
 	width: 200px;
-    height: 50px;
+    height: auto;
 	overflow-y:auto;
 	
 	margin:0 0.5em 0.5em 0;

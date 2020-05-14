@@ -20,29 +20,37 @@
       west: "",
       east: ""
     }
+    
+    $(document).on("click","#clearList",function(){
+      fillList();
+      $("#north").empty();
+      $("#south").empty();
+      $("#west").empty();
+      $("#east").empty();
+    })
     $(document).on("click", "#nextbtn", function () {
       $("#PrincipalList").empty();
-   
-      for (i = 0; i < devices.length; i++) {
+
+     /* for (i = 0; i < devices.length; i++) {
         $("#PrincipalList").append("<li data-draggable='item' draggable='true'>" + devices[i].ip + "</li>")
-      }
+      }*/
+      fillList();
       $("#StreetSetting").css("display", "block")
 
       $('html, body').animate({
         scrollTop: $("#StreetSetting").offset().top
-      }, 800, function () {
-      });
+      }, 800, function () {});
 
     })
     // $(document).on("change", "#selectStreet", function () {
     $(document).ready(function () {
-      $("#subtbtn").click(function () {
-        var data = {
-          north: "::ffff:127.0.0.2",
-          south: "::ffff:192.168.1.21",
-          west: "::ffff:127.0.0.3",
-          east: "::ffff:127.0.0.1"
-        };
+      $(document).on("click","#subtbtn",function(){
+        north=$("#north").children().text();
+        south = $("#south").children().text();
+        east = $("#east").children().text();
+        west = $("#west").children().text();
+        var data = {north,south,east,west}
+        console.log(data);
         $.ajax({
           type: "GET",
           url: "/makeIntersection",
@@ -143,35 +151,18 @@
         return (devices.length <= 0 || $("#idRue").val() == "" || $("#idGouvernorat").val() == "")
       }
     })
-    
-
-    $(document).on("click", "#nextbtn", function () {
-     
-   
-     for (i = 0; i < devices.length; i++) {
-       $("#PrincipalList").append("<li data-draggable='item' draggable='true'>" + devices[i].ip + "</li>")
-     }
-     $("#StreetSetting").css("display", "block")
-
-     $('html, body').animate({
-       scrollTop: $("#StreetSetting").offset().top
-     }, 800, function () {
+function fillList(){
+  $("#PrincipalList").empty();
+  for (i = 0; i < devices.length; i++) {
+        $("#PrincipalList").append("<li data-draggable='item' draggable='true'>" + devices[i].ip + "</li>")
+      }
+}
 
 
-     });
-
-
-
-
-   })
-   $(document).on("click", "#nextbtn", function () {
-     var north= $("north").children("option:selected").val()
-     alert(north);
-   })
   </script>
 
-  
- 
+
+
 </head>
 
 <body bgcolor="#e5e7e8">
@@ -241,18 +232,6 @@
       </div>
     </div>
 
-    <style>
-      .backGroudStreet {
-        background-color: #9d9c9a;
-        height: 115px;
-      }
-
-      .backGroudStreetTop {
-        background-color: #9d9c9a;
-        height: 100%;
-        width: 115px;
-      }
-    </style>
 
 
 
@@ -267,32 +246,52 @@
                   background-color: white;">
 
 
+      <div class="row" style="margin-top: 5%;">
+        <div class="col-2">
+          <button class="btn btn-outline-danger btn-sm" id="clearList">Clear</button>
+          <ol data-draggable="target" draggable="true" id="PrincipalList">
+          </ol>
+        </div>
 
-      <ol data-draggable="target" style="height: 150px; position:absolute;" draggable="true" id="PrincipalList">
-      
-      </ol>
-      <ol data-draggable="target" style="left: 44%;top: 9%;position: absolute;"id="north">
-      </ol>
-      <ol data-draggable="target" style="position: absolute;left: 21%;top: 44%;"id="west">
-      </ol>
-      <ol data-draggable="target" style="top: 44%; position: absolute; left: 66.5%;"id="east">
-      </ol>
-      <ol data-draggable="target" style="position: absolute; top: 83%; left: 44%;"id="south">
-      </ol>
-      <img class="centered" src="img/street.png" alt="">
-      <script src="./dragAnd.js"></script>
+        <div class="col">
+          <div class="row">
+            <div class="col">
+
+              <ol class="centered_NS" data-draggable="target" id="north">
+              </ol>
+
+            </div>
+          </div>
+          <div class="row" style="margin-bottom: 1%;">
+            <div class="col">
+              <ol class="centered_WE" data-draggable="target" id="west"></ol>
+            </div>
+            <div class="col">
+              <img class="d-block m-auto" src="img/street.png" alt="">
+            </div>
+            <div class="col">
+              <ol class="centered_WE" data-draggable="target" id="east"></ol>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col">
+
+              <ol class="centered_NS" data-draggable="target" id="south">
+              </ol>
+
+            </div>
+          </div>
+
+        </div>
+
+      </div>
     </div>
-
     <button id="nextbtn" class="float-right btn btn-lg btn-success">Next</button>
 
     <button id="subtbtn" class="float-right btn btn-lg btn-success">Submit</button>
 
 
-
-  </div>
-
-
-
+    <script src="./dragAnd.js"></script>
 </body>
 
 </html>
