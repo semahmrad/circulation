@@ -13,6 +13,7 @@
   <script src="jq.js"></script>
 
   <script>
+    var StopMoveTo = true;
     var devices = [];
     var direction = {
       north: "",
@@ -22,27 +23,23 @@
     }
     
     $(document).on("click","#clearList",function(){
+
       fillList();
       $("#north").empty();
       $("#south").empty();
       $("#west").empty();
       $("#east").empty();
-    })
-    $(document).on("click", "#nextbtn", function () {
-      $("#PrincipalList").empty();
-
-     /* for (i = 0; i < devices.length; i++) {
-        $("#PrincipalList").append("<li data-draggable='item' draggable='true'>" + devices[i].ip + "</li>")
-      }*/
-      fillList();
-      $("#StreetSetting").css("display", "block")
-
-      $('html, body').animate({
-        scrollTop: $("#StreetSetting").offset().top
-      }, 800, function () {});
-
+      $("#subtbtn").prop("disabled",true)
     })
     // $(document).on("change", "#selectStreet", function () {
+      function moveTo(){
+        StopMoveTo = !StopMoveTo;
+        fillList();
+        $("#StreetSetting").css("display", "block")
+        $('html, body').animate({
+        scrollTop: $("#StreetSetting").offset().top
+      }, 800, function () {});
+      }
     $(document).ready(function () {
       $(document).on("click","#subtbtn",function(){
         north=$("#north").children().text();
@@ -55,19 +52,23 @@
           type: "GET",
           url: "/makeIntersection",
           data: {
-            direction: data
+            direction: data,
+            state: $("#idGouvernorat").val(),
+            street: $("#idRue").val()
           },
           success: function (res) {
-            alert(res);
+            //alert(res);
           }
 
         })
       })
 
-      $("#nextbtn").prop("disabled", true)
       setInterval(function () {
-        $("#nextbtn").prop("disabled", checkToNext())
-
+        
+        if(checkToNext()&&StopMoveTo){
+          moveTo();
+        }
+        if(!StopMoveTo)enabledSubBtn();
 
         $.ajax({
           url: '/getCameraData',
@@ -124,31 +125,8 @@
       }, 1000);
 
 
-      $("#idButton").click(function () {
-        $.ajax({
-          type: "get",
-          url: "/site",
-          data: {
-            gouvernorat: $("#idGouvernorat").val(),
-            rue: $("#idRue").val()
-          },
-          success: function (result) {
-
-
-            if (result == "suscess query") {
-              $("#validation").empty();
-              $("#validation").append(result)
-            } else {
-
-              $("#validation").empty();
-              $("#validation").append("probleeem")
-            }
-          }
-        })
-      })
-
       function checkToNext() {
-        return (devices.length <= 0 || $("#idRue").val() == "" || $("#idGouvernorat").val() == "")
+        return (devices.length >= 4 && $("#idRue").val() != "" && $("#idGouvernorat").val() != "")
       }
     })
 function fillList(){
@@ -156,6 +134,12 @@ function fillList(){
   for (i = 0; i < devices.length; i++) {
         $("#PrincipalList").append("<li data-draggable='item' draggable='true'>" + devices[i].ip + "</li>")
       }
+}
+function enabledSubBtn(){
+ length =  document.getElementById("PrincipalList").childElementCount
+ if(length == 0)$("#subtbtn").prop("disabled",false)
+ 
+ console.log("length ", length);
 }
 
 
@@ -248,7 +232,7 @@ function fillList(){
 
       <div class="row" style="margin-top: 5%;">
         <div class="col-2">
-          <button class="btn btn-outline-danger btn-sm" id="clearList">Clear</button>
+          <button class="btn btn-outline-danger btn-sm mb-2" id="clearList">Clear</button>
           <ol data-draggable="target" draggable="true" id="PrincipalList">
           </ol>
         </div>
@@ -286,11 +270,7 @@ function fillList(){
 
       </div>
     </div>
-    <button id="nextbtn" class="float-right btn btn-lg btn-success">Next</button>
-
-    <button id="subtbtn" class="float-right btn btn-lg btn-success">Submit</button>
-
-
+    <button id="subtbtn" disabled='true' class="float-right btn btn-lg btn-outline-success mb-3">Submit</button>
     <script src="./dragAnd.js"></script>
 </body>
 

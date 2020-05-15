@@ -7,8 +7,8 @@ const jsdom = require('jsdom')
 let socket = require("socket.io")
 var mysql = require('mysql');
 var os = require('os');
- var LocalStorage = require('node-localstorage').LocalStorage;
-  localStorage = new LocalStorage('./scratch');
+var LocalStorage = require('node-localstorage').LocalStorage;
+localStorage = new LocalStorage('./scratch');
 var BodyPars = BodyParser.urlencoded({
     extended: false
 })
@@ -16,12 +16,12 @@ var ROUTER_INDEX = Express.Router()
 var SERVER = Express()
 var getIP = require('ipware')().get_ip;
 
+var lightTable = [];
+var nbrcarstable = [];
+tablePosIdStreet = [];
+var dynmicOrStatic = "dynamic";
+var nbrMustConnectdDevices = 4;
 
-var nbrcarstable=[];
-tablePosIdStreet=[];
-var dynmicOrStatic="dynamic";
-var nbrMustConnectdDevices =1;
-var lightTable=[]
 
 
 
@@ -33,7 +33,7 @@ let socketServer = SERVER.listen(4000, () => {
 
 let io = socket(socketServer);
 /**Connected client list */
-var listclient=[]
+var listclient = []
 /** */
 
 const {
@@ -45,7 +45,7 @@ var user;
 var pwd;
 var siteData = null
 ROUTER_INDEX.sendOrNot = "send";
-var itemtable=[];
+var itemtable = [];
 
 var connection = mysql.createConnection({
     host: '127.0.0.1',
@@ -158,28 +158,6 @@ function ROUTING() {
     });
 
 
-
-    ROUTER_INDEX.get("/request", function (req, res) {
-        //about  mysql  connection
-
-        reque = "INSERT INTO `testtable` (`id`, `nom`, `prenom`) VALUES (NULL, 'sdds', 'ddsds');"
-        connection.query(reque, (err, rows, filds) => {
-            if (!!err) {
-                console.log("error" + err);
-
-            } else {
-                console.log("suscess query");
-                console.log(rows)
-                res.send(rows)
-
-            }
-
-
-        });
-    })
-
-
-
     ROUTER_INDEX.get("/site", function (req, res) {
 
 
@@ -218,24 +196,46 @@ function ROUTING() {
         })
     })
 
-    this.getDataFromCallback=function(direction,callback){
-        
+    this.getDataFromCallback = function (direction, callback) {
+
     }
 
 
-    function makeItemTable(direction,rows,itemtable){
-        for(i=0;i<rows.length;i++){
-            keys=Object.keys(direction)[i];
-            var itemI=rows.filter(item=>item.ip==direction[keys]);
-          itemtable.push({
-                idStreet:itemI[0].idrue,
-                ip:itemI[0].ip,
-                position:Object.keys(direction)[i]
+    function makeItemTable(direction, rows, itemtable) {
+        for (i = 0; i < rows.length; i++) {
+            keys = Object.keys(direction)[i];
+            var itemI = rows.filter(item => item.ip == direction[keys]);
+            itemtable.push({
+                idStreet: itemI[0].idrue,
+                ip: itemI[0].ip,
+                position: Object.keys(direction)[i]
             });
         }
     }
     ROUTER_INDEX.get("/makeIntersection", (req, res) => {
-      
+
+
+        var state = req.query.state;
+        var street = req.query.street;
+        console.log("state=>" + state)
+        console.log("street=>" + street)
+
+        reque = "INSERT INTO `site` (`id`, `gouvernorat`, `rue`) VALUES (NULL,'" + state + "', '" + street + "');"
+        connection.query(reque, (err, rows, filds) => {
+            if (err) {
+                console.log("erroererr");
+
+            } else {
+                console.log(rows)
+                
+
+            }
+
+        });
+
+
+
+
 
         var ipCameraNorth = req.query.direction.north
         console.log("north :" + ipCameraNorth);
@@ -245,32 +245,34 @@ function ROUTING() {
         console.log("east :" + ipCameraEast);
         var ipCameraWest = req.query.direction.west
         console.log("west :" + ipCameraWest);
-        direction=req.query.direction;
-    
+        direction = req.query.direction;
+
         var reqSel = "select idrue,ip from rue R,camera C where R.idcamera=C.idcamera and (C.ip='" + ipCameraNorth + "'or  C.ip='" + ipCameraSouth + "' or  C.ip='" + ipCameraWest + "' or  C.ip='" + ipCameraEast + "');";
-       
-   
+
+
         connection.query(reqSel, (err, rows, filds) => {
             console.log(rows.length)
             if (err) {
                 console.log(err)
             }
-        //function
-        makeItemTable(direction,rows,itemtable);
-            
-          connection.query("INSERT INTO intersection (`idintersection`, `north`, `south`, `east`, `west`) values(null,'" + itemtable[0].idStreet + "','" + itemtable[1].idStreet + "','" + itemtable[2].idStreet + "','" + itemtable[3].idStreet + "') ", (err, rows, filds) => {
+            //function
+            makeItemTable(direction, rows, itemtable);
+
+            connection.query("INSERT INTO intersection (`idintersection`, `north`, `south`, `east`, `west`) values(null,'" + itemtable[0].idStreet + "','" + itemtable[1].idStreet + "','" + itemtable[2].idStreet + "','" + itemtable[3].idStreet + "') ", (err, rows, filds) => {
                 if (err) {
                     console.log(err)
                 } else {
                     console.log("success")
                 }
             });
-            console.log("=> callback : "+itemtable.length)
+            console.log("=> callback : " + itemtable.length)
         });
-            setTimeout(()=>{console.log("=> : "+JSON.stringify(itemtable))},200)
-            
-       
-        
+        setTimeout(() => {
+            console.log("=> : " + JSON.stringify(itemtable))
+        }, 200)
+
+
+
         res.send("hello")
 
     });
@@ -325,9 +327,11 @@ function ROUTING() {
                             console.log(err)
                         }
 
-                        var reqLight ="insert into feux values(null,'red',(SELECT max(idrue) FROM rue));";
-                        connection.query(reqLight,(err,rows,filds)=>{
-                            if(err){console.log(err)}
+                        var reqLight = "insert into feux values(null,'red',(SELECT max(idrue) FROM rue));";
+                        connection.query(reqLight, (err, rows, filds) => {
+                            if (err) {
+                                console.log(err)
+                            }
                             console.log("Street inserted ");
                         });
                     });
@@ -365,118 +369,179 @@ function ROUTING() {
     });
 
 
-    const getPosition=function(ip){
-        return new Promise(resolve=>{
-        res = "";
+    const getPosition = function (ip) {
+        return new Promise(resolve => {
+            res = "";
 
-        var sem = "select idrue from rue R,camera C where R.idcamera=C.idcamera and C.ip='::ffff:"+ip +"'";
-        connection.query(sem,(err,rows,field)=>{
-            if(err)console.log(err)
-            var req2 = "select * from intersection where ((north = ("+rows[0].idrue+")) or (south =("+rows[0].idrue+") )or (west =("+rows[0].idrue+") )or (east =("+rows[0].idrue+") ))";
-            connection.query(req2,(err,rows2,fields,)=>{
-                for(i = 0;i<Object.keys(rows2[0]).length;i++){
-                   
-                    if(rows2[0][Object.keys(rows2[0])[i]] == rows[0].idrue){
-                        resolve(Object.keys(rows2[0])[i]);
+            var sem = "select idrue from rue R,camera C where R.idcamera=C.idcamera and C.ip='::ffff:" + ip + "'";
+            connection.query(sem, (err, rows, field) => {
+                if (err) console.log(err)
+                var req2 = "select * from intersection where ((north = (" + rows[0].idrue + ")) or (south =(" + rows[0].idrue + ") )or (west =(" + rows[0].idrue + ") )or (east =(" + rows[0].idrue + ") ))";
+                connection.query(req2, (err, rows2, fields, ) => {
+                    for (i = 0; i < Object.keys(rows2[0]).length; i++) {
 
-                        tablePosIdStreet.push({
-                            idStreet : rows[0].idrue,
-                            position:Object.keys(rows2[0])[i]
-                        })
+                        if (rows2[0][Object.keys(rows2[0])[i]] == rows[0].idrue) {
+                            resolve(Object.keys(rows2[0])[i]);
+
+                            tablePosIdStreet.push({
+                                idStreet: rows[0].idrue,
+                                position: Object.keys(rows2[0])[i]
+                            })
+                        }
                     }
-                }
+                });
             });
-    });
-});
+        });
     }
-    const getPosition2= async function getPosition2(ip){
-        var r=await(getPosition(ip));
-       
+    const getPosition2 = async function getPosition2(ip) {
+        var r = await (getPosition(ip));
+
         return r;
     }
 
-
-    function decision(nbrcarstable){
-       tableNorthSouth=nbrcarstable.filter(item=>item.position=="north" || item.position=="south");
-       tableEastWest=nbrcarstable.filter(item=>item.position=="east" || item.position=="west");
-       carsNorthSouth=tableNorthSouth[0].nbrCars+tableNorthSouth[1].nbrCars;
-       carsEastWest=tableEastWest[0].nbrCars+tableEastWest[1].nbrCars;
-       if(carsNorthSouth>carsEastWest){
-        idStreetNorth=tablePosIdStreet.filter(i=>i.position=="north");
-        idStreetSouth=tablePosIdStreet.filter(i=>i.position=="south");
-        req="update table feux set etat ='green' where idrue="+idStreetNorth[0].idStreet+"or idrue="+idStreetSouth[0].idStreet+";"
-        connection.query(req,(err,rows,filds)=>{
-            if(err)console.log(err);
+    function testTab(lightTable) {
+        lightTable.push({
+            nbrCars: '0',
+            position: 'east',
+            ip: '::ffff:127.0.0.1',
         });
-       }
-       else {
-        idStreetEast=tablePosIdStreet.filter(i=>i.position=="east");
-        idStreetWest=tablePosIdStreet.filter(i=>i.position=="west");
-        
-        req="update table feux set etat ='green' where idrue="+idStreetEast[0].idStreet+"or idrue="+idStreetWest[0].idStreet+";"
-        connection.query(req,(err,rows,filds)=>{
-            if(err)console.log(err);
+        tablePosIdStreet.push({
+            idStreet: 64,
+            position: 'east'
+        });
+
+        lightTable.push({
+            nbrCars: '35',
+            position: 'west',
+            ip: '::ffff:127.0.0.2',
+        });
+        tablePosIdStreet.push({
+            idStreet: 63,
+            position: 'west'
+        });
+        lightTable.push({
+            nbrCars: '0',
+            position: 'north',
+            ip: '::ffff:127.0.0.3',
+        });
+        tablePosIdStreet.push({
+            idStreet: 62,
+            position: 'north'
         });
 
     }
-}
+
+    function decision(lightTable) {
+        console.log("table====>" + JSON.stringify(lightTable));
+        tableNorthSouth = lightTable.filter(item => item.position == "north" || item.position == "south");
+        tableEastWest = lightTable.filter(item => item.position == "east" || item.position == "west");
+        carsNorthSouth = tableNorthSouth[0].nbrCars + tableNorthSouth[1].nbrCars;
+        carsEastWest = tableEastWest[0].nbrCars + tableEastWest[1].nbrCars;
+        if (carsNorthSouth > carsEastWest) {
+            idStreetNorth = tablePosIdStreet.filter(i => i.position == "north");
+            idStreetSouth = tablePosIdStreet.filter(i => i.position == "south");
+
+            req = "update feux set etat ='vert' where idrue=" + idStreetNorth[0].idStreet + " or idrue=" + idStreetSouth[0].idStreet + ";"
+
+            connection.query(req, (err, rows, filds) => {
+                if (err) console.log(err);
+
+                requp = "update feux set etat ='rouge' where idrue <>" + idStreetNorth[0].idStreet + " and idrue <>" + idStreetSouth[0].idStreet + ";"
+                connection.query(requp,(err,rows,filds)=>{
+                    if(err){console.log(err);}
+                })
+            });
+        } else {
+
+ console.log("222222222222 ");
+            console.log("tablePosIdStreet ", JSON.stringify(tablePosIdStreet));
+            idStreetEast = tablePosIdStreet.filter(i => i.position == "east");
+            idStreetWest = tablePosIdStreet.filter(i => i.position == "west");
+
+            req = "update feux set etat ='vert' where idrue=" + idStreetEast[0].idStreet + " or idrue=" + idStreetWest[0].idStreet + ";"
+
+            connection.query(req, (err, rows, filds) => {
+                if (err) console.log("222222222222" + err);
+
+                requp = "update feux set etat ='rouge' where idrue <>" + idStreetEast[0].idStreet + " and idrue <>" + idStreetWest[0].idStreet + ";"
+                connection.query(requp,(err,rows,filds)=>{
+                    if(err){console.log(err);}
+                })
+            });
+
+        }
+    }
 
     ROUTER_INDEX.get("/sendNbrCars/:nbrcars/:ip", (req, res) => {
-        var nbrCars=req.params.nbrcars;
-        var ip=req.params.ip;
-       getPosition2(ip).then((positionIp)=>{
-        
-        if((listclient.length==nbrMustConnectdDevices)&&(dynmicOrStatic=="dynamic")){
-            var testTable=nbrcarstable.filter(item=>item.ip==ip);
-            if(testTable.length==0){
-                nbrcarstable.push({
-                    nbrCars,
-                    ip,
-                    position:positionIp,
-                });
-                if(nbrMustConnectdDevices==nbrcarstable.length){
-                    // the decision for the light ...
-                    decision(nbrcarstable);
-                
-                    console.log("=========dynamic methode ================")
-                    ROUTER_INDEX.sendOrNot = "not";
-                    console.log("nbr : " + req.params.nbrcars);
-                    setTimeout(() => {  
-                        console.log("Sleeeeeeeep !");
-                        ROUTER_INDEX.sendOrNot = "send";
-                        nbrcarstable.splice(0,nbrcarstable.length);
-                    }, 10000);
+        var nbrCars = req.params.nbrcars;
+        var ip = req.params.ip;
+        testTab(lightTable);
+        console.log("lightTable222 ==>" + lightTable.length);
+        getPosition2(ip).then((positionIp) => {
+            var nbr = listclient.length + 3;
+
+            if ((nbr == nbrMustConnectdDevices) && (dynmicOrStatic == "dynamic")) {
+                var testTable = lightTable.filter(item => item.ip == ip);
+                if (testTable.length == 0) {
+                    lightTable.push({
+                        nbrCars,
+                        ip,
+                        position: positionIp,
+                    });
+                    console.log("lightTable2 ==>" + lightTable.length);
+
+                    if (nbrMustConnectdDevices == lightTable.length) {
+                        console.log("=========dynamic methode ================");
+                        // the decision for the light ...
+                        decision(lightTable);
+
+
+                        ROUTER_INDEX.sendOrNot = "not";
+                        console.log("nbr : " + req.params.nbrcars);
+                        setTimeout(() => {
+                            console.log("Sleeeeeeeep !");
+                            ROUTER_INDEX.sendOrNot = "send";
+                            lightTable.splice(0, lightTable.length);
+                        }, 10000);
+                    }
                 }
             }
-        }
-        console.log("table====>"+JSON.stringify(nbrcarstable));
-    }).catch((err)=>{console.log("err==>"+err)});
-         res.send(ROUTER_INDEX.sendOrNot)
+
+        }).catch((err) => {
+            console.log("err==>" + err)
+        });
+        res.send(ROUTER_INDEX.sendOrNot)
     });
 
     //io.eio.pingTimeout = 10;
-   // io.eio.pingInterval = 10; 
+    // io.eio.pingInterval = 10; 
     io.on("connection", function (client) {
-       
+        let staticIntervale = null;
+
         listclient.push(client)
-        if(listclient.length==nbrMustConnectdDevices){dynmicOrStatic="dynamic";}
-        console.log("connected ="+listclient.length);
+        if (listclient.length == nbrMustConnectdDevices) {
+            dynmicOrStatic = "dynamic";
+        }
+        console.log("connected =" + listclient.length);
 
-        client.on("disconnect",function(){
-        console.log("client diconnect")
-        dynmicOrStatic="static";
-        setInterval(() => {
-
+        client.on("disconnect", function () {
+            console.log("client diconnect")
+            dynmicOrStatic = "static";
             console.log("=============static method=============")
-            setTimeout(()=>{
-                console.log("static method finish time")
-            },5000);
-    
-        }, 10000);
-       
-        listclient=listclient.filter(item=>item.id!=client.id);
-        console.log("connected ="+listclient.length);
-    })
+
+            // staticIntervale=setInterval(() => {
+            if (listclient.length == nbrMustConnectdDevices) {
+                clearInterval(staticIntervale);
+            }
+            console.log("dynmicOrStatic==>" + dynmicOrStatic)
+            console.log("static sleep finshed")
+
+            // }, 5000);
+
+
+            listclient = listclient.filter(item => item.id != client.id);
+            console.log("connected =" + listclient.length);
+        })
     });
 
 }
