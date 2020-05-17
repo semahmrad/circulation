@@ -481,8 +481,6 @@ function ROUTING() {
         } 
         else {
 
-
-
             //console.log("tablePosIdStreet ", JSON.stringify(tablePosIdStreet));
             idStreetEast = tablePosIdStreet.filter(i => i.position == "east");
             idStreetWest = tablePosIdStreet.filter(i => i.position == "west");
@@ -573,7 +571,7 @@ function ROUTING() {
             }
 
         }).catch((err) => {
-            console.log("err==>" + err)
+            console.log("err==>" + err);
         });
         res.send(ROUTER_INDEX.sendOrNot)
     });
@@ -599,7 +597,7 @@ function ROUTING() {
                     }
                 });
             });
-            setTimeout(()=>{res.send(result)},30)
+            setTimeout(()=>{res.send(result)},40);
           
         });
        
