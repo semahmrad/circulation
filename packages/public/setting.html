@@ -13,7 +13,7 @@
   <script src="jq.js"></script>
 
   <script>
-    var StopMoveTo = true;
+    var StopMoveTo = false;
     var devices = [];
     var direction = {
       north: "",
@@ -21,6 +21,7 @@
       west: "",
       east: ""
     }
+   
     
     $(document).on("click","#clearList",function(){
 
@@ -41,6 +42,12 @@
       }, 800, function () {});
       }
     $(document).ready(function () {
+      $( ".inputFocus" ).blur(function() {
+        idGouvernorat =$( "#idGouvernorat" ).val()
+        idrue = $( "#idRue" ).val()
+        if(idGouvernorat !="" && idrue !="")StopMoveTo=true;
+      
+  })
       $(document).on("click","#subtbtn",function(){
         north=$("#north").children().text();
         south = $("#south").children().text();
@@ -178,11 +185,11 @@ function enabledSubBtn(){
         <form>
           <div class="form-group">
             <label for="state1">State </label>
-            <input type="text" class="form-control" name='gouvernorat' id="idGouvernorat" placeholder="Enter the state">
+            <input type="text" class="form-control inputFocus" name='gouvernorat' id="idGouvernorat" placeholder="Enter the state">
           </div>
           <div class="form-group">
             <label for="state1">Street </label>
-            <input type="text" class="form-control" name='rue' id="idRue" placeholder="Enter the Street name">
+            <input type="text" class="form-control inputFocus" name='rue' id="idRue" placeholder="Enter the Street name">
           </div>
           <!--<button type="button" id="idButton" class="btn btn-primary">Confirm !</button>-->
         </form>

@@ -411,7 +411,7 @@ function ROUTING() {
         });
 
         lightTable.push({
-            nbrCars: '35',
+            nbrCars: '2',
             position: 'west',
             ip: '::ffff:127.0.0.2',
         });
@@ -441,24 +441,62 @@ function ROUTING() {
             idStreetNorth = tablePosIdStreet.filter(i => i.position == "north");
             idStreetSouth = tablePosIdStreet.filter(i => i.position == "south");
 
-            req = "update feux set etat ='vert' where idrue=" + idStreetNorth[0].idStreet + " or idrue=" + idStreetSouth[0].idStreet + ";"
+            reqetat="select etat from feux where idrue=" + idStreetNorth[0].idStreet + ";"
+            connection.query(reqetat,(err,rows,filds)=>{
+                if(err)console.log(err);
+                if(rows[0].etat=="rouge"){
+                    reqOrange = "update feux set etat ='orange';"
+                    connection.query(reqOrange,(err,rows,filds)=>{
+                        if(err)console.log(err);
+                    });
 
-            connection.query(req, (err, rows, filds) => {
-                if (err) console.log(err);
+                    setTimeout(()=>{
 
-                requp = "update feux set etat ='rouge' where idrue <>" + idStreetNorth[0].idStreet + " and idrue <>" + idStreetSouth[0].idStreet + ";"
-                connection.query(requp,(err,rows,filds)=>{
-                    if(err){console.log(err);}
-                })
-            });
-        } else {
+        
+                        req = "update feux set etat ='vert' where idrue=" + idStreetNorth[0].idStreet + " or idrue=" + idStreetSouth[0].idStreet + ";"
+            
+                        connection.query(req, (err, rows, filds) => {
+                            if (err) console.log(err);
+            
+                            requp = "update feux set etat ='rouge' where idrue <>" + idStreetNorth[0].idStreet + " and idrue <>" + idStreetSouth[0].idStreet + ";"
+                            connection.query(requp,(err,rows,filds)=>{
+                                if(err){console.log(err);}
+                            });
+                        });
+                    },2000)
+                 }
+                 else{ req = "update feux set etat ='vert' where idrue=" + idStreetNorth[0].idStreet + " or idrue=" + idStreetSouth[0].idStreet + ";"
+            
+                 connection.query(req, (err, rows, filds) => {
+                     if (err) console.log(err);
+     
+                     requp = "update feux set etat ='rouge' where idrue <>" + idStreetNorth[0].idStreet + " and idrue <>" + idStreetSouth[0].idStreet + ";"
+                     connection.query(requp,(err,rows,filds)=>{
+                         if(err){console.log(err);}
+                     });
+                 });
+                }
+            })
+           
+        } 
+        else {
 
- console.log("222222222222 ");
-            console.log("tablePosIdStreet ", JSON.stringify(tablePosIdStreet));
+
+
+            //console.log("tablePosIdStreet ", JSON.stringify(tablePosIdStreet));
             idStreetEast = tablePosIdStreet.filter(i => i.position == "east");
             idStreetWest = tablePosIdStreet.filter(i => i.position == "west");
 
-            req = "update feux set etat ='vert' where idrue=" + idStreetEast[0].idStreet + " or idrue=" + idStreetWest[0].idStreet + ";"
+            reqetat="select etat from feux where idrue=" + idStreetEast[0].idStreet + ";"
+            connection.query(reqetat,(err,rows,filds)=>{
+                if(rows[0].etat=="rouge"){
+
+                    reqOrange = "update feux set etat ='orange';"
+                    connection.query(reqOrange,(err,rows,filds)=>{
+                        if(err)console.log(err);
+                    });
+                    setTimeout(()=>{
+                        req = "update feux set etat ='vert' where idrue=" + idStreetEast[0].idStreet + " or idrue=" + idStreetWest[0].idStreet + ";"
 
             connection.query(req, (err, rows, filds) => {
                 if (err) console.log("222222222222" + err);
@@ -468,6 +506,32 @@ function ROUTING() {
                     if(err){console.log(err);}
                 })
             });
+
+                    },2000)
+
+
+
+                }else{
+
+                    req = "update feux set etat ='vert' where idrue=" + idStreetEast[0].idStreet + " or idrue=" + idStreetWest[0].idStreet + ";"
+
+            connection.query(req, (err, rows, filds) => {
+                if (err) console.log("222222222222" + err);
+
+                requp = "update feux set etat ='rouge' where idrue <>" + idStreetEast[0].idStreet + " and idrue <>" + idStreetWest[0].idStreet + ";"
+                connection.query(requp,(err,rows,filds)=>{
+                    if(err){console.log(err);}
+                })
+            });
+
+                }
+
+
+            })
+
+
+
+            
 
         }
     }
@@ -479,7 +543,8 @@ function ROUTING() {
         console.log("lightTable222 ==>" + lightTable.length);
         getPosition2(ip).then((positionIp) => {
             var nbr = listclient.length + 3;
-
+            
+            console.log("nbr ", nbr);
             if ((nbr == nbrMustConnectdDevices) && (dynmicOrStatic == "dynamic")) {
                 var testTable = lightTable.filter(item => item.ip == ip);
                 if (testTable.length == 0) {
@@ -513,13 +578,41 @@ function ROUTING() {
         res.send(ROUTER_INDEX.sendOrNot)
     });
 
+    ROUTER_INDEX.get("/sendStatesToTrafficLight", function (req, res) {
+        result =[]
+        reqLight="select etat,idrue from feux";
+        connection.query(reqLight,(err,rows,filds)=>{
+            if(err){console.log("err : "+err);}
+            rows.forEach(element => {
+                req2 = `select * from intersection where ((north = (  ${element.idrue}  )) or (south =( ${element.idrue} ) )or (west =( ${element.idrue} ) )or (east =( ${element.idrue} ) ))`;
+
+                connection.query(req2, (err, rows2, fields, ) => {
+                    if(err)console.log(err)
+                    for (j = 0; j < Object.keys(rows2[0]).length; j++) {
+                        if (rows2[0][Object.keys(rows2[0])[j]] == element.idrue) {
+                            result.push({
+                                idrue:element.idrue,
+                                position:Object.keys(rows2[0])[j],
+                                color:element.etat
+                            })
+                        }
+                    }
+                });
+            });
+            setTimeout(()=>{res.send(result)},30)
+          
+        });
+       
+    });
+    
+
     //io.eio.pingTimeout = 10;
     // io.eio.pingInterval = 10; 
     io.on("connection", function (client) {
         let staticIntervale = null;
 
         listclient.push(client)
-        if (listclient.length == nbrMustConnectdDevices) {
+        if (listclient.length+3 == nbrMustConnectdDevices) {
             dynmicOrStatic = "dynamic";
         }
         console.log("connected =" + listclient.length);
@@ -529,14 +622,14 @@ function ROUTING() {
             dynmicOrStatic = "static";
             console.log("=============static method=============")
 
-            // staticIntervale=setInterval(() => {
-            if (listclient.length == nbrMustConnectdDevices) {
+            staticIntervale=setInterval(() => {
+            if (listclient.length+3 == nbrMustConnectdDevices) {
                 clearInterval(staticIntervale);
             }
             console.log("dynmicOrStatic==>" + dynmicOrStatic)
             console.log("static sleep finshed")
 
-            // }, 5000);
+            }, 5000);
 
 
             listclient = listclient.filter(item => item.id != client.id);

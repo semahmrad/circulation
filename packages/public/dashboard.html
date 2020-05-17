@@ -1,32 +1,125 @@
 <html>
-    <body>
-        <script src="jq.js"></script>
-
+  
+        <title>Dashboard </title>
+ 
+      <meta charset="utf-8" />
+      <!-- <link rel="stylesheet" href="cssFile/style_setting.css" />-->
+      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+        integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" href="./cssFile/dashCss.css"/>
+    <link rel="stylesheet" href="./cssFile/trafficLight.css"/>
+    <script src="jq.js"></script>
+        <body>
+            <nav class="navbar navbar-expand-lg navbar-light bg-light">
+                <a class="navbar-brand" href="#"><h3 class="h3">Dashboard</h3></a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                  <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                  <ul class="navbar-nav ml-auto">
+                    <li class="nav-item">
+                        <a href="/setting" class="nav-link-item">Setting</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/logout" class="nav-link-item">Logout</a>
+                    </li>
+                  </ul>
+                  </div>
+               
+              </nav>
+        <div class="container">
+           <div class="row " style="margin-top: 2%;">
+               <div class="col-4" style="background-color: #f8f9fa;
+               border-radius: 5px;">
+                <p class="text-center"><strong>State :</strong>  Bizerte</p>
+                <p class="text-center"><strong>Street :</strong>  Cornich</p>
+               </div>
+            </div>
+            <div class="row">
+                <div class="col-4"></div>
+                <div class="col-4">
+                 <center><div id="north" class="rectangle">
+                    <div id="rouge" class="circle circle-off-red"></div>
+                        <div id="orange"  class="circle circle-off-orang"></div>
+                        <div id="vert" class="circle circle-off-green"></div>
+                 </div></center>
+                </div>
+                <div class="col-4"></div>
+             </div>
+             <div class="row" style="margin-top: 5%;
+             margin-bottom: 5%;">
+                <div class="col-4">
+                    <center><div id="west" class="rectangle-transform">
+                        <div id="rouge" class="circle circle-off-red"></div>
+                        <div id="orange"  class="circle circle-off-orang"></div>
+                        <div id="vert" class="circle circle-off-green"></div>
+                     </div></center>
+                </div>
+                <div class="col-4">
+                
+                </div>
+                <div class="col-4">
+                    <center><div id="east" class="rectangle-transform">
+                        <div id="rouge" class="circle circle-off-red"></div>
+                        <div id="orange"  class="circle circle-off-orang"></div>
+                        <div id="vert" class="circle circle-off-green"></div>
+                     </div></center>
+                </div>
+             </div>
+             <div class="row">
+                <div class="col-4"></div>
+                <div class="col-4">
+                 <center><div id="south" class="rectangle">
+                    <div id="rouge" class="circle circle-off-red"></div>
+                    <div id="orange" class="circle circle-off-orang"></div>
+                    <div id="vert" class="circle circle-off-green"></div>
+                 </div></center>
+                </div>
+                <div class="col-4"></div>
+             </div>
+            
         <script>
          $(document).ready(function(){
-            $('#testing').click(function(){
-            $.ajax({
+            setInterval(()=>{
+                $.ajax({
                 dataType:"json",
                 type:"get",
-                url :"/siteData",
-                data:{
-                    
-                },
+                url :"/sendStatesToTrafficLight",
+
                 success:function(result){
-                    alert(result[0].rue);
+
+                   console.log(JSON.stringify(result));
+                   result.forEach(element => {
+                       var rouge = $("#"+element.position+" #rouge")//.attr('class');
+                       var orange = $("#"+element.position+" #orange")//.attr('class');
+                       var vert = $("#"+element.position+" #vert")//.attr('class');
+                       //alert("rouge"+rouge)
+                       switch(element.color){
+                           case "rouge":{
+                              // alert(element.position)
+                              
+                            rouge.removeClass('circle-off-red').addClass('circle-on-red');
+                            orange.removeClass('circle-on-orang').addClass('circle-off-orang');
+                            vert.removeClass('circle-on-green').addClass('circle-off-green');
+                           break}
+                           case "orange":{
+                            rouge.removeClass('circle-on-red').addClass('circle-off-red');
+                            orange.removeClass('circle-off-orang').addClass('circle-on-orang');
+                            vert.removeClass('circle-on-green').addClass('circle-off-green');
+                            break}
+                            case "vert":{
+                                rouge.removeClass('circle-on-red').addClass('circle-off-red');
+                                orange.removeClass('circle-on-orang').addClass('circle-off-orang');
+                                vert.removeClass('circle-off-green').addClass('circle-on-green');
+                               
+                                breaks}
+                       }
+                   });
+
                 }
-
             })
-
-         });
+            },1000)
         });
         </script>
-
-        <h1>DashboardPage</h1>
-        <div id="zoneTest">
-
-        </div>
-        <button id ="testing">test</button>
-        <a href="/logout">logout</a>
     </body>
 </html>

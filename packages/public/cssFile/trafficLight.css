@@ -1,0 +1,48 @@
+.rectangle {
+    padding: 4%;
+    height: 190px;
+    width: 90px;
+    border-radius: 8px;
+    background: #2a3946;
+  }
+  .rectangle-transform {
+    display: flex;
+    flex-flow: row wrap;
+    align-items: center;
+    padding: 4%;
+    height: 90px;
+    width: 190px;
+    border-radius: 8px;
+    background: #2a3946;
+  }
+
+  .circle {
+    
+      margin: 2px;
+    height: 50px;
+    width: 50px;
+    background-color: white;
+    border-radius: 50%;
+  }
+
+.circle-off-red{
+background: #ab0202;
+
+  }
+.circle-off-orang{
+    background: #ad7a07;
+   
+}
+.circle-off-green{
+    background: #1d7101;
+}
+
+.circle-on-red{
+    background: #ff0404;
+}
+.circle-on-orang{
+    background: #ffb100;
+}
+.circle-on-green{
+    background: #40ff00;    
+}
