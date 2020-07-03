@@ -13,7 +13,11 @@
   <script src="jq.js"></script>
 
   <script>
-    var StopMoveTo = false;
+    var isConfigSet = {
+      isConfig: false,
+      isSet : false}
+    var StopMoveTo = true;
+    var disbledBtn = true;
     var devices = [];
     var direction = {
       north: "",
@@ -24,8 +28,7 @@
    
     
     $(document).on("click","#clearList",function(){
-
-      fillList();
+     fillList()
       $("#north").empty();
       $("#south").empty();
       $("#west").empty();
@@ -35,7 +38,7 @@
     // $(document).on("change", "#selectStreet", function () {
       function moveTo(){
         StopMoveTo = !StopMoveTo;
-        fillList();
+        if(!isConfigSet.isConfig){fillList()}
         $("#StreetSetting").css("display", "block")
         $('html, body').animate({
         scrollTop: $("#StreetSetting").offset().top
@@ -45,7 +48,7 @@
       $( ".inputFocus" ).blur(function() {
         idGouvernorat =$( "#idGouvernorat" ).val()
         idrue = $( "#idRue" ).val()
-        if(idGouvernorat !="" && idrue !="")StopMoveTo=true;
+        if(idGouvernorat !="" && idrue !="")disbledBtn=false;
       
   })
       $(document).on("click","#subtbtn",function(){
@@ -72,7 +75,7 @@
 
       setInterval(function () {
         
-        if(checkToNext()&&StopMoveTo){
+        if(checkToNext()&&StopMoveTo&&!disbledBtn){
           moveTo();
         }
         if(!StopMoveTo)enabledSubBtn();
@@ -82,8 +85,39 @@
           data: "",
           dataType: "json",
           success: function (data) {
+            //console.log(!isConfigSet.isSet)
+           if(!isConfigSet.isSet){         
+             
+ console.log("!isConfigSet.isSet ", !isConfigSet.isSet);    
+            if(data.config){
+              isConfigSet.isConfig = true;
+              $("#idGouvernorat").val(data.site.state);
+              $("#idRue").val(data.site.street);
+              rempDevices(data.rows)
+              setDevicesPoisitions(data.config)
 
-            $("#connedteddevs").empty();
+              
+            }else{
+              rempDevices(data)
+            }
+            isConfigSet.isSet = true;
+          }
+          }
+        });
+
+      }, 1000);
+      function setDevicesPoisitions(config){
+        config = JSON.parse(config)
+        config.forEach(element => {
+          elm = "<li data-draggable='item' draggable='true'>"+element.ip+"</li>"
+         $("#"+element.position).empty();
+         $("#"+element.position).append(elm)
+         $("#PrincipalList").empty();
+        });
+      }
+      function rempDevices (data){
+         
+        $("#connedteddevs").empty();
             // alert(data[0].ip)
             for (i = 0; i < data.length; i++) {
               var ip = data[i].ip;
@@ -124,14 +158,7 @@
               // var elem = "<div id='n_device' class='col col-4'><p> ip camera : "+data[i].ip+"</div>";
               $("#connedteddevs").append(elem);
             }
-
-
-          }
-        });
-
-      }, 1000);
-
-
+      }
       function checkToNext() {
         return (devices.length >= 4 && $("#idRue").val() != "" && $("#idGouvernorat").val() != "")
       }
@@ -145,7 +172,6 @@ function fillList(){
 function enabledSubBtn(){
  length =  document.getElementById("PrincipalList").childElementCount
  if(length == 0)$("#subtbtn").prop("disabled",false)
- 
  console.log("length ", length);
 }
 

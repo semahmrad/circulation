@@ -1,0 +1,1 @@
+[{"nbrCars":"2","position":"north","ip":"::ffff:127.0.0.1"},{"nbrCars":"2","position":"west","ip":"::ffff:127.0.0.2"},{"nbrCars":"3","ip":"192.168.1.3","position":"south"},{"nbrCars":"0","ip":"192.168.1.12","position":"east"}]

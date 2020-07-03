@@ -38,11 +38,28 @@ background: #ab0202;
 }
 
 .circle-on-red{
+  box-shadow: 0px 10px 70px #ff0404;
     background: #ff0404;
 }
 .circle-on-orang{
+  box-shadow: 5px 5px 80px #ffb100;
     background: #ffb100;
 }
 .circle-on-green{
+  box-shadow: 10px 10px 50px #40ff00;
     background: #40ff00;    
+}
+.device{
+  position: absolute;
+  left: 4%;
+  top: 4%;
+}
+.connected-device{
+  color: #40ff00 ;
+  text-shadow: 0px 0px 10px #40ff00;
+
+}
+.disConnected-device{
+  text-shadow: 0px 0px 10px #ff0404;
+  color: #ff0404;
 }

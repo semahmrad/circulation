@@ -4,7 +4,7 @@ const Express = require("express")
 const BodyParser = require("body-parser")
 const sessions = require("express-session")
 const jsdom = require('jsdom')
-let socket = require("socket.io")
+let socket = require("socket.io");
 var mysql = require('mysql');
 var os = require('os');
 var LocalStorage = require('node-localstorage').LocalStorage;
@@ -19,8 +19,14 @@ var getIP = require('ipware')().get_ip;
 var lightTable = [];
 var nbrcarstable = [];
 tablePosIdStreet = [];
-var dynmicOrStatic = "dynamic";
+var dynmicOrStatic = "static";
 var nbrMustConnectdDevices = 4;
+const testDevices = 3;
+const maxGreenTime=15000;
+currntTime=0;
+
+
+
 
 
 
@@ -46,6 +52,7 @@ var pwd;
 var siteData = null
 ROUTER_INDEX.sendOrNot = "send";
 var itemtable = [];
+var ok=true;
 
 var connection = mysql.createConnection({
     host: '127.0.0.1',
@@ -53,7 +60,7 @@ var connection = mysql.createConnection({
     password: '',
     database: 'circulation'
 
-})
+});
 
 connection.connect(function (error) {
     //callback
@@ -173,7 +180,7 @@ function ROUTING() {
 
             } else {
                 console.log(rows)
-                res.send("suscess query")
+                res.send("suscess query");
 
             }
 
@@ -212,6 +219,14 @@ function ROUTING() {
             });
         }
     }
+    ROUTER_INDEX.get("/a",(req,res)=>{
+
+       
+            localStorage.clear()
+      
+        res.send("kjnjkj");
+    })
+ 
     ROUTER_INDEX.get("/makeIntersection", (req, res) => {
 
 
@@ -219,6 +234,14 @@ function ROUTING() {
         var street = req.query.street;
         console.log("state=>" + state)
         console.log("street=>" + street)
+
+        connection.query("TRUNCATE TABLE site;",(err,rows,fildes)=>{
+            if(err)console.log(err)
+        });
+        connection.query("TRUNCATE TABLE intersection;",(err,rows,fildes)=>{
+            if(err)console.log(err)
+        });
+        localStorage.clear();
 
         reque = "INSERT INTO `site` (`id`, `gouvernorat`, `rue`) VALUES (NULL,'" + state + "', '" + street + "');"
         connection.query(reque, (err, rows, filds) => {
@@ -346,14 +369,41 @@ function ROUTING() {
     });
 
     ROUTER_INDEX.get("/getCameraData", (req, res) => {
+        if(localStorage.getItem("configTable")){
+            req = "select * from site"
+            connection.query(req,(err,siteRows,filds)=>{
+                if(err)console.log(err)
+                site = {
+                    state:siteRows[0].gouvernorat,
+                    street:siteRows[0].rue
+                }
+                //localStorage.getItem("configTable").push(site)
+                var reqSel = "select *  from camera ";
+                connection.query(reqSel, (err, rows, filds) => {
+                    if (err) {
+                        console.log(err)
+                    }
+                   /// console.log("config ==>",JSON.stringify(localStorage.getItem("configTable")[0]))
+                    result = {
+                        config :localStorage.getItem("configTable"),
+                        site,
+                        rows
+                    }
+                    res.send(result)
+                })
+            })
+        }
+        else{
+            var reqSel = "select *  from camera ";
+            connection.query(reqSel, (err, rows, filds) => {
+                if (err) {
+                    console.log(err)
+                }
+                res.send(rows)
+            });
 
-        var reqSel = "select *  from camera ";
-        connection.query(reqSel, (err, rows, filds) => {
-            if (err) {
-                console.log(err)
-            }
-            res.send(rows)
-        })
+        }
+       
 
     });
 
@@ -401,43 +451,61 @@ function ROUTING() {
 
     function testTab(lightTable) {
         lightTable.push({
-            nbrCars: '0',
-            position: 'east',
+            nbrCars: '2',
+            position: 'north',
             ip: '::ffff:127.0.0.1',
         });
         tablePosIdStreet.push({
             idStreet: 64,
-            position: 'east'
+            position: 'north'
         });
 
         lightTable.push({
-            nbrCars: '2',
+            nbrCars: '3',
             position: 'west',
             ip: '::ffff:127.0.0.2',
         });
         tablePosIdStreet.push({
             idStreet: 63,
             position: 'west'
-        });
+      });  
         lightTable.push({
             nbrCars: '0',
-            position: 'north',
+            position: 'east',
             ip: '::ffff:127.0.0.3',
         });
         tablePosIdStreet.push({
-            idStreet: 62,
-            position: 'north'
-        });
+            idStreet: 70,
+            position: 'east'
+        }); 
 
+    }
+    function colorChangeForced(){
+        reqWhoChange="select idfeu from feux where etat='vert'";
+        connection.query(reqWhoChange,(err,rowsIdFeu,filds)=>{
+        
+        
+        reqOrange = "update feux set etat ='orange';"
+        connection.query(reqOrange,(err,rows,filds)=>{if(err)console.log(err)});
+        setTimeout(()=>{
+            reqchangeRed="update feux set etat ='rouge' where idfeu ='"+rowsIdFeu[0].idfeu+"' or idfeu ='"+rowsIdFeu[1].idfeu+"';";
+            connection.query(reqchangeRed,(err,rows,filds)=>{if(err)console.log(err)});
+            reqchangeGreen="update feux set etat ='vert' where etat ='orange';";
+            connection.query(reqchangeGreen,(err,rows,filds)=>{if(err)console.log(err)});
+        },2000);
+    });
     }
 
     function decision(lightTable) {
-        console.log("table====>" + JSON.stringify(lightTable));
+     
         tableNorthSouth = lightTable.filter(item => item.position == "north" || item.position == "south");
         tableEastWest = lightTable.filter(item => item.position == "east" || item.position == "west");
-        carsNorthSouth = tableNorthSouth[0].nbrCars + tableNorthSouth[1].nbrCars;
-        carsEastWest = tableEastWest[0].nbrCars + tableEastWest[1].nbrCars;
-        if (carsNorthSouth > carsEastWest) {
+        carsNorthSouth = parseInt(tableNorthSouth[0].nbrCars) + parseInt(tableNorthSouth[1].nbrCars);
+        carsEastWest = parseInt(tableEastWest[0].nbrCars)+ parseInt(tableEastWest[1].nbrCars);
+        console.log("=============>carsNorthSouth"+carsNorthSouth);
+        console.log("=============>carsEastWest"+carsEastWest);
+        if (carsNorthSouth > carsEastWest && currntTime<maxGreenTime) {
+            
             idStreetNorth = tablePosIdStreet.filter(i => i.position == "north");
             idStreetSouth = tablePosIdStreet.filter(i => i.position == "south");
 
@@ -445,6 +513,7 @@ function ROUTING() {
             connection.query(reqetat,(err,rows,filds)=>{
                 if(err)console.log(err);
                 if(rows[0].etat=="rouge"){
+                    currntTime=0;
                     reqOrange = "update feux set etat ='orange';"
                     connection.query(reqOrange,(err,rows,filds)=>{
                         if(err)console.log(err);
@@ -463,9 +532,11 @@ function ROUTING() {
                                 if(err){console.log(err);}
                             });
                         });
-                    },2000)
+                    },2000);
                  }
-                 else{ req = "update feux set etat ='vert' where idrue=" + idStreetNorth[0].idStreet + " or idrue=" + idStreetSouth[0].idStreet + ";"
+                 else{ 
+                    currntTime+=10000;
+                     req = "update feux set etat ='vert' where idrue=" + idStreetNorth[0].idStreet + " or idrue=" + idStreetSouth[0].idStreet + ";"
             
                  connection.query(req, (err, rows, filds) => {
                      if (err) console.log(err);
@@ -475,11 +546,12 @@ function ROUTING() {
                          if(err){console.log(err);}
                      });
                  });
+                 
                 }
-            })
+            });
            
         } 
-        else {
+       if (carsNorthSouth < carsEastWest ){
 
             //console.log("tablePosIdStreet ", JSON.stringify(tablePosIdStreet));
             idStreetEast = tablePosIdStreet.filter(i => i.position == "east");
@@ -488,7 +560,7 @@ function ROUTING() {
             reqetat="select etat from feux where idrue=" + idStreetEast[0].idStreet + ";"
             connection.query(reqetat,(err,rows,filds)=>{
                 if(rows[0].etat=="rouge"){
-
+                    currntTime=0;
                     reqOrange = "update feux set etat ='orange';"
                     connection.query(reqOrange,(err,rows,filds)=>{
                         if(err)console.log(err);
@@ -509,8 +581,9 @@ function ROUTING() {
 
 
 
-                }else{
-
+                }
+                else{
+                    currntTime+=10000;
                     req = "update feux set etat ='vert' where idrue=" + idStreetEast[0].idStreet + " or idrue=" + idStreetWest[0].idStreet + ";"
 
             connection.query(req, (err, rows, filds) => {
@@ -521,53 +594,66 @@ function ROUTING() {
                     if(err){console.log(err);}
                 })
             });
-
                 }
 
 
             })
 
-
-
-            
-
+        }
+     
+        if(!localStorage.getItem("configTable")){
+            localStorage.setItem("configTable",JSON.stringify(lightTable));
         }
     }
 
+    
+    fillorNot=true;
     ROUTER_INDEX.get("/sendNbrCars/:nbrcars/:ip", (req, res) => {
+      
         var nbrCars = req.params.nbrcars;
         var ip = req.params.ip;
+        if(fillorNot){
         testTab(lightTable);
-        console.log("lightTable222 ==>" + lightTable.length);
+    }
+       // console.log("lightTable222 ==>" + lightTable.length);
         getPosition2(ip).then((positionIp) => {
-            var nbr = listclient.length + 3;
+            var nbr = listclient.length +testDevices;
             
-            console.log("nbr ", nbr);
+            console.log("lightTable ", lightTable.length);
             if ((nbr == nbrMustConnectdDevices) && (dynmicOrStatic == "dynamic")) {
+                console.log("Her=======>1")
+                fillorNot=false;
                 var testTable = lightTable.filter(item => item.ip == ip);
+
                 if (testTable.length == 0) {
                     lightTable.push({
                         nbrCars,
-                        ip,
                         position: positionIp,
+                        ip,  
                     });
-                    console.log("lightTable2 ==>" + lightTable.length);
 
                     if (nbrMustConnectdDevices == lightTable.length) {
+                         console.log("Her=======>22");
                         console.log("=========dynamic methode ================");
                         // the decision for the light ...
+                        console.log("///////// decision////////");
                         decision(lightTable);
 
 
                         ROUTER_INDEX.sendOrNot = "not";
+                        
+                        fillorNot=true;
+                        
                         console.log("nbr : " + req.params.nbrcars);
                         setTimeout(() => {
+                            lightTable.splice(0, lightTable.length);
                             console.log("Sleeeeeeeep !");
                             ROUTER_INDEX.sendOrNot = "send";
-                            lightTable.splice(0, lightTable.length);
-                        }, 10000);
+                            
+                        }, 5000);
                     }
                 }
+                
             }
 
         }).catch((err) => {
@@ -576,18 +662,22 @@ function ROUTING() {
         res.send(ROUTER_INDEX.sendOrNot)
     });
 
-    ROUTER_INDEX.get("/sendStatesToTrafficLight", function (req, res) {
+    
+    const getMustAttributes = () =>{
+        return new Promise(resolve => {
         result =[]
         reqLight="select etat,idrue from feux";
         connection.query(reqLight,(err,rows,filds)=>{
             if(err){console.log("err : "+err);}
             rows.forEach(element => {
+            
                 req2 = `select * from intersection where ((north = (  ${element.idrue}  )) or (south =( ${element.idrue} ) )or (west =( ${element.idrue} ) )or (east =( ${element.idrue} ) ))`;
 
                 connection.query(req2, (err, rows2, fields, ) => {
                     if(err)console.log(err)
                     for (j = 0; j < Object.keys(rows2[0]).length; j++) {
                         if (rows2[0][Object.keys(rows2[0])[j]] == element.idrue) {
+
                             result.push({
                                 idrue:element.idrue,
                                 position:Object.keys(rows2[0])[j],
@@ -595,39 +685,184 @@ function ROUTING() {
                             })
                         }
                     }
+                  
                 });
             });
-            setTimeout(()=>{res.send(result)},40);
+
+           setTimeout(()=>{resolve(result)},50) ;
+        });
+    });
+    } 
+    const asyncgetMustAttributes = async ()=>{
+        var resl = await(getMustAttributes());
+        return resl;
+    }
+
+    ROUTER_INDEX.get("/x", function (req, res) {
+      
+    });
+
+    ROUTER_INDEX.get("/sendStatesToTrafficLight", function (req, res) {
+        result =[]
+        reqLight="select etat,idrue from feux";
+        connection.query(reqLight,(err,rows,filds)=>{
+            if(err){console.log("err : "+err);}
+            rows.forEach(element => {
+            
+                req2 = `select * from intersection where ((north = (  ${element.idrue}  )) or (south =( ${element.idrue} ) )or (west =( ${element.idrue} ) )or (east =( ${element.idrue} ) ))`;
+
+                connection.query(req2, (err, rows2, fields, ) => {
+                    if(err)console.log(err)
+                    for (j = 0; j < Object.keys(rows2[0]).length; j++) {
+                        if (rows2[0][Object.keys(rows2[0])[j]] == element.idrue) {
+                            var  pushed = {
+                                idrue:element.idrue,
+                                position:Object.keys(rows2[0])[j],
+                                color:element.etat,
+                               //nbrCar:lightTable.filter(item => item.position == Object.keys(rows2[0])[j])[0].nbrCars
+                            }
+                            //console.log(Object.keys(rows2[0])[j]);
+                            testTabb=lightTable.filter(item => item.position == Object.keys(rows2[0])[j])
+                            //console.log(testTabb);
+
+                            //console.log("lightTable ", lightTable);
+                            if(lightTable.filter(item => item.position == Object.keys(rows2[0])[j]).length!=0 && dynmicOrStatic == "dynamic" ){
+                                
+                               pushed.nbrCar = lightTable.filter(item => item.position == Object.keys(rows2[0])[j])[0].nbrCars
+                                console.log("If...");
+                                //console.log("dynmicOrStatic ", dynmicOrStatic);
+                            }
+                            else{
+                               // console.log("this one "+testTabb);
+                               // console.log("dynmicOrStatic ", dynmicOrStatic);
+                                pushed.nbrCar = 0
+                                //console.log("Else ...");
+                            }
+                            //console.log("lightTable ", lightTable);
+                        
+                                //console.log("pushed ", pushed);
+                            result.push(pushed)
+                        }
+                    }
+                });
+            });
+            setTimeout(()=>{
+
+                result.push({
+                    "method":dynmicOrStatic,
+                })
+                res.send(result)
+            },500);
           
         });
        
     });
+
+   
+    function colorChange(){
+        asyncgetMustAttributes().then(resq=>{
+          
+
+        console.log("=====>"+ok)
+
+        if(ok){
+
+                 North = resq.filter(item =>item.position == "north")
+                 South = resq.filter(item =>item.position == "south")
+
+                if(North[0].color=="rouge" || North[0].color=="orange" ){
+                    reqOrange = "update feux set etat ='orange';"
+                    connection.query(reqOrange,(err,rows,filds)=>{
+                        if(err)console.log(err);
+                
+                    });
+
+                    setTimeout(()=>{
+
+        
+                        req = "update feux set etat ='vert' where idrue=" + North[0].idrue + " or idrue=" + South[0].idrue + ";"
+            
+                        connection.query(req, (err, rows, filds) => {
+                            if (err) console.log(err);
+                          
+                            requp = "update feux set etat ='rouge' where idrue <>" + North[0].idrue + " and idrue <>" + South[0].idrue + ";"
+                            connection.query(requp,(err,rows,filds)=>{
+                                if(err){console.log(err);}
+                               
+                            });
+                        });
+                    },2000)
+                 }
+    
+            ok=!ok;
+
+        }
+        else{
+
+                East = resq.filter(item => item.position == "east")
+                West = resq.filter(item => item.position == "west")
+                
+
+ 
+                  if(East[0].color=="rouge" || East[0].color=="orange" ){
+  
+                      reqOrange = "update feux set etat ='orange';"
+                      connection.query(reqOrange,(err,rows,filds)=>{
+                          if(err)console.log(err);
+                          
+                      });
+                      setTimeout(()=>{
+                          req = "update feux set etat ='vert' where idrue=" + East[0].idrue + " or idrue=" + West[0].idrue + ";"
+  
+              connection.query(req, (err, rows, filds) => {
+                  if (err) console.log("222222222222" + err);
+  
+                  requp = "update feux set etat ='rouge' where idrue <>" + East[0].idrue + " and idrue <>" + West[0].idrue + ";"
+                  connection.query(requp,(err,rows,filds)=>{
+                      if(err){console.log(err);}
+
+                  })
+              });
+  
+                      },2000);
+                  }
+              ok=!ok;
+        }
+    }).catch(err=>{
+
+        console.log("err ", err);
+    })
+    }
     
 
     //io.eio.pingTimeout = 10;
     // io.eio.pingInterval = 10; 
     io.on("connection", function (client) {
-        let staticIntervale = null;
-
-        listclient.push(client)
-        if (listclient.length+3 == nbrMustConnectdDevices) {
+        listclient.push(client);
+        lightTable.splice(0, lightTable.length);
+        if (listclient.length+testDevices == nbrMustConnectdDevices) {
             dynmicOrStatic = "dynamic";
+            fillorNot=true;
+            clearInterval(globalStaticInterval);
+         
         }
         console.log("connected =" + listclient.length);
 
         client.on("disconnect", function () {
+            lightTable.splice(0, lightTable.length);
+            fillorNot=true;
             console.log("client diconnect")
             dynmicOrStatic = "static";
             console.log("=============static method=============")
-
-            staticIntervale=setInterval(() => {
-            if (listclient.length+3 == nbrMustConnectdDevices) {
-                clearInterval(staticIntervale);
-            }
+            let staticIntervale=setInterval(() => {
+               if (listclient.length+testDevices == nbrMustConnectdDevices) {
+                    clearInterval(staticIntervale);
+                }
             console.log("dynmicOrStatic==>" + dynmicOrStatic)
-            console.log("static sleep finshed")
-
-            }, 5000);
+            console.log("static sleep finshed");
+           
+            colorChange();
+            }, 10000);
 
 
             listclient = listclient.filter(item => item.id != client.id);
@@ -635,4 +870,9 @@ function ROUTING() {
         })
     });
 
-}
+  let globalStaticInterval=setInterval(()=>{
+        colorChange();
+    },10000);
+        
+
+} 

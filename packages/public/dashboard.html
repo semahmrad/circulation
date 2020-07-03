@@ -6,7 +6,8 @@
       <!-- <link rel="stylesheet" href="cssFile/style_setting.css" />-->
       <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
         integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-    <link rel="stylesheet" href="./cssFile/dashCss.css"/>
+        <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+        <link rel="stylesheet" href="./cssFile/dashCss.css"/>
     <link rel="stylesheet" href="./cssFile/trafficLight.css"/>
     <script src="jq.js"></script>
         <body>
@@ -27,21 +28,31 @@
                   </div>
                
               </nav>
-        <div class="container">
+        <div class="container" style="margin: 0%;">
            <div class="row " style="margin-top: 2%;">
                <div class="col-4" style="background-color: #f8f9fa;
                border-radius: 5px;">
                 <p class="text-center"><strong>State :</strong>  Bizerte</p>
                 <p class="text-center"><strong>Street :</strong>  Cornich</p>
+                <p class="text-center"><strong>Method :</strong><span id="method"></span></p>
                </div>
             </div>
             <div class="row">
                 <div class="col-4"></div>
                 <div class="col-4">
+                    
+                    <center><div class="card" style="width: 8rem;">
+                        <h5 class="card-title" style="margin: 0;">
+                            <i class="fa fa-circle device disConnected-device"></i><img src="./img/surveillance.png" height="50px" width="50px" alt=""></h5><div class="card-body" style="padding: 0;">
+                            <div class="group " >
+                                <i class="fa fa-car"></i><strong class="ml-3" id="northNbrCars"> </strong> 
+                            </div>
+                        </div></div></center>  
+                    
                  <center><div id="north" class="rectangle">
-                    <div id="rouge" class="circle circle-off-red"></div>
-                        <div id="orange"  class="circle circle-off-orang"></div>
                         <div id="vert" class="circle circle-off-green"></div>
+                        <div id="orange"  class="circle circle-off-orang"></div>
+                        <div id="rouge" class="circle circle-off-red"></div>
                  </div></center>
                 </div>
                 <div class="col-4"></div>
@@ -49,16 +60,30 @@
              <div class="row" style="margin-top: 5%;
              margin-bottom: 5%;">
                 <div class="col-4">
+                    <center><div class="card" style="width: 8rem;">
+                        <h5 class="card-title" style="margin: 0;">
+                            <i class="fa fa-circle device disConnected-device"></i><img src="./img/surveillance.png" height="50px" width="50px" alt=""></h5><div class="card-body" style="padding: 0;">
+                            <div class="group " >
+                                <i class="fa fa-car"></i><strong class="ml-3" id="westNbrCars"> </strong> 
+                            </div>
+                        </div></div></center>  
                     <center><div id="west" class="rectangle-transform">
-                        <div id="rouge" class="circle circle-off-red"></div>
-                        <div id="orange"  class="circle circle-off-orang"></div>
                         <div id="vert" class="circle circle-off-green"></div>
+                        <div id="orange"  class="circle circle-off-orang"></div>
+                        <div id="rouge" class="circle circle-off-red"></div>
                      </div></center>
                 </div>
                 <div class="col-4">
                 
                 </div>
                 <div class="col-4">
+                    <center><div class="card" style="width: 8rem;">
+                        <h5 class="card-title" style="margin: 0;">
+                            <i class="fa fa-circle device connected-device"></i><img src="./img/surveillance.png" height="50px" width="50px" alt=""></h5><div class="card-body" style="padding: 0;">
+                            <div class="group " >
+                                <i class="fa fa-car"></i><strong class="ml-3" id="eastNbrCars"> </strong> 
+                            </div>
+                        </div></div></center>  
                     <center><div id="east" class="rectangle-transform">
                         <div id="rouge" class="circle circle-off-red"></div>
                         <div id="orange"  class="circle circle-off-orang"></div>
@@ -69,16 +94,33 @@
              <div class="row">
                 <div class="col-4"></div>
                 <div class="col-4">
-                 <center><div id="south" class="rectangle">
-                    <div id="rouge" class="circle circle-off-red"></div>
-                    <div id="orange" class="circle circle-off-orang"></div>
-                    <div id="vert" class="circle circle-off-green"></div>
-                 </div></center>
+                   
+                
+                 <center><div class="card" style="width: 8rem;">
+                    <h5 class="card-title" style="margin: 0;"><i class="fa fa-circle device connected-device"></i><img src="./img/surveillance.png" height="50px" width="50px" alt=""></h5><div class="card-body" style="padding: 0;">
+                        <div class="group " >
+                            <i class="fa fa-car"></i><strong class="ml-3" id="southNbrCars"> </strong> 
+                        </div>
+                    </div></div></center>  
+                    <center><div id="south" class="rectangle">
+                        <div id="rouge" class="circle circle-off-red"></div>
+                        <div id="orange" class="circle circle-off-orang"></div>
+                        <div id="vert" class="circle circle-off-green"></div>
+                     </div></center>
                 </div>
                 <div class="col-4"></div>
              </div>
             
         <script>
+            function setNbrCars(data){
+                for(i=0;i<data.length-1;i++){
+
+                    console.log("data[i].nbrCar ", data[i].nbrCar);
+                    
+                    $("#"+data[i].position+"NbrCars").empty();
+                    $("#"+data[i].position+"NbrCars").append(data[i].nbrCar)
+                }
+            }
          $(document).ready(function(){
             setInterval(()=>{
                 $.ajax({
@@ -89,6 +131,8 @@
                 success:function(result){
 
                    console.log(JSON.stringify(result));
+                    setNbrCars(result)
+                   $("#method").text(result[result.length-1].method)
                    result.forEach(element => {
                        var rouge = $("#"+element.position+" #rouge")//.attr('class');
                        var orange = $("#"+element.position+" #orange")//.attr('class');
