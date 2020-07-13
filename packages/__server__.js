@@ -605,7 +605,7 @@ function ROUTING() {
             localStorage.setItem("configTable",JSON.stringify(lightTable));
         }
     }
-
+//testpushed
     
     fillorNot=true;
     ROUTER_INDEX.get("/sendNbrCars/:nbrcars/:ip", (req, res) => {
