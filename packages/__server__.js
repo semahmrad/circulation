@@ -461,7 +461,7 @@ function ROUTING() {
         });
 
         lightTable.push({
-            nbrCars: '3',
+            nbrCars: '0',
             position: 'west',
             ip: '::ffff:127.0.0.2',
         });
@@ -470,7 +470,7 @@ function ROUTING() {
             position: 'west'
       });  
         lightTable.push({
-            nbrCars: '0',
+            nbrCars: '3',
             position: 'east',
             ip: '::ffff:127.0.0.3',
         });
@@ -504,7 +504,7 @@ function ROUTING() {
         carsEastWest = parseInt(tableEastWest[0].nbrCars)+ parseInt(tableEastWest[1].nbrCars);
         console.log("=============>carsNorthSouth"+carsNorthSouth);
         console.log("=============>carsEastWest"+carsEastWest);
-        if (carsNorthSouth > carsEastWest && currntTime<maxGreenTime) {
+        if (carsNorthSouth > carsEastWest) {
             
             idStreetNorth = tablePosIdStreet.filter(i => i.position == "north");
             idStreetSouth = tablePosIdStreet.filter(i => i.position == "south");
@@ -614,7 +614,7 @@ function ROUTING() {
         var ip = req.params.ip;
         if(fillorNot){
         testTab(lightTable);
-    }
+        }
        // console.log("lightTable222 ==>" + lightTable.length);
         getPosition2(ip).then((positionIp) => {
             var nbr = listclient.length +testDevices;
